@@ -1,10 +1,8 @@
-# Streamlit and OpenAI imports
+import anvil.server
 import openai
-import streamlit as st
 import traceback
 
-# Retrieve the API key from Streamlit's secrets
-openai.api_key = st.secrets["openai_api_key"]
+anvil.server.connect("your-anvil-uptime-secret")
 
 class OrakuSantosAssistant:
     # ... existing initialization ...
@@ -16,7 +14,6 @@ class OrakuSantosAssistant:
         Instead of giving direct answers, guide the students by asking probing questions, 
         presenting multiple viewpoints, or encouraging them to explore and discover answers on their own.
         """
-
         try:
             response = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
@@ -27,18 +24,11 @@ class OrakuSantosAssistant:
         except Exception as e:
             return "Error: " + str(e)
 
-    # ... existing methods ...
+# Define a function that can be called from the Anvil app
+@anvil.server.callable
+def get_response_from_oraku(query):
+    assistant = OrakuSantosAssistant()
+    return assistant.get_api_response(query)
 
-# Streamlit interface
-def run_streamlit_app():
-    st.title("Oraku The Assistant")
-    st.image("https://drive.google.com/uc?export=view&id=136vKmcixUJ-WbylKbX4R7fhXlxpDEeE-")
-    st.write("I was developed by Mr. Santos to assist you. So, please ask me any question, and I will help you and guide you in thinking critically about the answer.")
-    user_input = st.text_input("Ask Oraku:")
-    if user_input:
-        assistant = OrakuSantosAssistant()
-        response = assistant.get_api_response(user_input)
-        st.write(response)
-
-if __name__ == "__main__":
-    run_streamlit_app()
+# Keep the server running
+anvil.server.wait_forever()
